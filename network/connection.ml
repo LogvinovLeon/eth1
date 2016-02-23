@@ -10,24 +10,36 @@ let read_data_entry reader =
         | `Ok s -> s
         | `Eof  -> raise End_of_file;;
 
-let rec main_loop handle_data_entry s r w =
-    read_data_entry r
-    >>| handle_data_entry
-    >>= fun () -> main_loop handle_data_entry s r w;;
+let write_data_entry writer data = (
+    Writer.write_line writer data;
+    Writer.flushed writer
+);;
 
-let rec infinite_reconnect host port handle_data_entry =
-    try_with (fun () ->
-        with_connection host port (main_loop handle_data_entry))
-    >>= function
-        | Ok _ -> failwith "Connection finised with OK"
-        | Error _ -> (
-            let delay = Time.Span.of_sec 0.5 in
-            Clock.after delay
-            >>= fun () -> (
-                let delay_sexp = Time.Span.sexp_of_t delay in
-                let delay_s = Sexp.to_string delay_sexp in
-                printf "Reconnecting after %s ...\n" delay_s;
-                infinite_reconnect host port handle_data_entry
+let main_loop handle_data_entry _ r w =
+    let write_data = write_data_entry w in
+    let rec _main_loop () =
+        read_data_entry r
+        >>= fun data -> handle_data_entry write_data data
+        >>= fun () -> _main_loop ()
+    in
+    _main_loop ();;
+
+let infinite_reconnect host port handle_data_entry =
+    let rec _infinite_reconnect () =
+        try_with (fun () ->
+            with_connection host port (main_loop handle_data_entry))
+        >>= function
+            | Ok _ -> failwith "Connection finised with OK"
+            | Error _ -> (
+                let delay = Time.Span.of_sec 0.5 in
+                Clock.after delay
+                >>= fun () -> (
+                    let delay_sexp = Time.Span.sexp_of_t delay in
+                    let delay_s = Sexp.to_string delay_sexp in
+                    printf "Reconnecting after %s ...\n" delay_s;
+                    _infinite_reconnect ()
+               )
             )
-        );;
+    in
+    _infinite_reconnect ();;
 

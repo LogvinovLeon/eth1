@@ -1,3 +1,4 @@
+# /usr/bin/python
 import argparse
 import SocketServer
 import socket
@@ -14,7 +15,7 @@ class MyTCPHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         while True:
             self.wfile.write("Hello\nMulti line\n")
-            print "Write finished"
+            print "{} wrote: {}".format(self.client_address[0], self.rfile.readline())
             sleep(1)
 
 
