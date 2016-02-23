@@ -1,4 +1,5 @@
-# /usr/bin/python
+#!/usr/bin/python
+import json
 import argparse
 import SocketServer
 import socket
@@ -14,7 +15,10 @@ class MyTCPServer(SocketServer.TCPServer):
 class MyTCPHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         while True:
-            self.wfile.write("Hello\nMulti line\n")
+            data1 = {"type" : "hello"}
+            data2 = {"type" : "error", "error": "dupa"}
+            data = json.dumps(data1) + "\n" + json.dumps(data2) + "\n"
+            self.wfile.write(data)
             print "{} wrote: {}".format(self.client_address[0], self.rfile.readline())
             sleep(1)
 

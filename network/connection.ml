@@ -1,5 +1,6 @@
 open Core.Std;;
 open Async.Std;;
+open Core_kernel.Std;;
 
 let with_connection host port f =
     let addr = Tcp.to_host_and_port host port in
@@ -30,7 +31,8 @@ let infinite_reconnect host port handle_data_entry =
             with_connection host port (main_loop handle_data_entry))
         >>= function
             | Ok _ -> failwith "Connection finised with OK"
-            | Error _ -> (
+            | Error e -> (
+                print_endline (Exn.to_string e);
                 let delay = Time.Span.of_sec 0.5 in
                 Clock.after delay
                 >>= fun () -> (

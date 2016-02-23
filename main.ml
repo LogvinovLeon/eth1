@@ -1,15 +1,17 @@
 open Core.Std;;
 open Async.Std;;
 open Connection;;
+open Message;;
 
 let handle_data_entry write_data data =
-    begin
-        print_endline "-----DATA_BEGIN-----";
-        print_endline data;
-        print_endline "-----DATA_END-------";
-        print_endline "";
-        write_data "Received"
-    end;;
+    let message = message_of_string data in
+    (
+    print_endline "-----DATA_BEGIN-----";
+    print_endline (Sexp.to_string (sexp_of_message message));
+    print_endline "-----DATA_END-------";
+    print_endline "";
+    write_data "Received"
+    );;
 
 let () =
     let command = Command.async_basic
