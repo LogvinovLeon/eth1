@@ -17,7 +17,7 @@ let rec main_loop handle_data_entry s r w =
 
 let rec infinite_reconnect host port handle_data_entry =
     try_with (fun () ->
-        with_connection "localhost" 80 (main_loop handle_data_entry))
+        with_connection host port (main_loop handle_data_entry))
     >>= function
         | Ok _ -> failwith "Connection finised with OK"
         | Error _ -> (
