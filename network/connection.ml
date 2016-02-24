@@ -1,6 +1,5 @@
 open Core.Std;;
 open Async.Std;;
-open Core_kernel.Std;;
 
 let with_connection host port f =
     let addr = Tcp.to_host_and_port host port in

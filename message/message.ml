@@ -2,20 +2,19 @@ open Yojson.Basic;;
 open Util;;
 open Sexplib;;
 open Sexplib.Std;;
-
-type order_id = {order_id : int} with sexp;;
+open Types;;
 
 type message =
     | Hello
     | Error of string
-    | Reject of order_id
+    | Reject of Order_id.t
     | Trade
     | Open
     | Close
     | Book (* TODO *)
-    | Ack of order_id
+    | Ack of Order_id.t
     | Fill (* TODO *)
-    | Out of order_id
+    | Out of Order_id.t
     with sexp;;
 
 let string_member key json =
@@ -38,4 +37,4 @@ let message_of_string data =
     | "ack"    -> Ack {order_id = json |> int_member "order_id"}
     | "fill"   -> Fill
     | "out"    -> Out {order_id = json |> int_member "order_id"}
-    | _ -> Error ("Parsing not implemented yet")
+    | _ -> failwith "Exhaustiveness stub";;
