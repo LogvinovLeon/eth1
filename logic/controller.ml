@@ -7,10 +7,7 @@ open Types;;
 let handle_data_entry write_data data =
     let message = message_of_string data in
     (
-    print_endline "-----DATA_BEGIN-----";
-    print_endline (Sexp.to_string (sexp_of_message message));
-    print_endline "-----DATA_END-------";
-    print_endline "";
+    printf "%s\n" (Sexp.to_string (sexp_of_message message));
     write_data "Received"
     >>= fun () ->
         write_data (
