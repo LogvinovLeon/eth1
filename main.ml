@@ -16,6 +16,7 @@ let () =
             host port
             ~handle_data_entry
             ~on_connect
+            ~on_disconnect
             ~state:State.initial)
     in
     Command.run command;;

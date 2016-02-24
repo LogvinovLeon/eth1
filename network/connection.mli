@@ -2,7 +2,7 @@ open State;;
 
 type writer = string -> unit Async_unix.Import.Deferred.t;;
 
-val infinite_reconnect:
+val infinite_reconnect :
     string -> (* host *)
     int -> (* port *)
     handle_data_entry : (
@@ -15,6 +15,9 @@ val infinite_reconnect:
         write : writer ->
         state : State.t ->
         State.t Async.Std.Deferred.t
+    ) ->
+    on_disconnect : (
+        state : State.t -> unit Async.Std.Deferred.t
     ) ->
     state : State.t ->
     'c Async.Std.Deferred.t

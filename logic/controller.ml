@@ -25,3 +25,8 @@ let on_connect ~write ~state =
     (* TODO: load state *)
     write (Action.string_of_action(Action.Hello))
     >>| fun () -> state;;
+
+let on_disconnect ~state = (
+    print_endline (Sexp.to_string (State.sexp_of_t state));
+    return ()
+);;
