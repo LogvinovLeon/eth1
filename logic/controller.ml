@@ -4,13 +4,12 @@ open Message;;
 open Action;;
 open Types;;
 
-let handle_data_entry write_data data =
-    let message = message_of_string data in
-    (
+let handle_data_entry ~write ~state ~data =
+    let message = message_of_string data in (
     printf "%s\n" (Sexp.to_string (sexp_of_message message));
-    write_data "Received"
+    write "Received"
     >>= fun () ->
-        write_data (
+        write (
             string_of_action (
 (* https://realworldocaml.org/v1/en/html/records.html#reusing-field-names *)
                 Buy {Buy_or_sell.
@@ -21,4 +20,5 @@ let handle_data_entry write_data data =
                 }
             )
         )
+    >>| fun () -> state
     );;

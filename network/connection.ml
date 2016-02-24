@@ -15,19 +15,19 @@ let write_data_entry writer data = (
     Writer.flushed writer
 );;
 
-let main_loop handle_data_entry _ r w =
-    let write_data = write_data_entry w in
-    let rec _main_loop () =
+let main_loop handle_data_entry state _ r w =
+    let write = write_data_entry w in
+    let rec _main_loop state =
         read_data_entry r
-        >>= fun data -> handle_data_entry write_data data
-        >>= fun () -> _main_loop ()
+        >>= fun data -> handle_data_entry ~write ~state ~data
+        >>= fun state -> _main_loop state
     in
-    _main_loop ();;
+    _main_loop state;;
 
-let infinite_reconnect host port handle_data_entry =
+let infinite_reconnect host port handle_data_entry ~state =
     let rec _infinite_reconnect () =
         try_with (fun () ->
-            with_connection host port (main_loop handle_data_entry))
+            with_connection host port (main_loop handle_data_entry state))
         >>= function
             | Ok _ -> failwith "Connection finised with OK"
             | Error e -> (
