@@ -2,6 +2,7 @@ S .
 S network
 S message
 S logic
+S utils
 
 B _build/*
 
