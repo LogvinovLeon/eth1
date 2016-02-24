@@ -1,6 +1,8 @@
 open Core.Std;;
 open Async.Std;;
 
+type writer = string -> unit Async_unix.Import.Deferred.t;;
+
 let with_connection host port f =
     let addr = Tcp.to_host_and_port host port in
     Tcp.with_connection addr f;;
@@ -15,19 +17,23 @@ let write_data_entry writer data = (
     Writer.flushed writer
 );;
 
-let main_loop handle_data_entry state _ r w =
+let main_loop handle_data_entry on_connect state _ r w =
     let write = write_data_entry w in
-    let rec _main_loop state =
-        read_data_entry r
-        >>= fun data -> handle_data_entry ~write ~state ~data
-        >>= fun state -> _main_loop state
-    in
-    _main_loop state;;
+    let rec _main_loop ~state =
+        try_with (fun () -> read_data_entry r)
+        >>= function
+            | Ok data -> handle_data_entry ~write ~state ~data
+                         >>= fun state -> _main_loop ~state
+            | Error e -> Exn.reraise e "TODO: Save state"
+    in (
+        on_connect ~write ~state
+        >>= fun state -> _main_loop ~state
+    )
 
-let infinite_reconnect host port handle_data_entry ~state =
+let infinite_reconnect host port ~handle_data_entry ~on_connect ~state =
     let rec _infinite_reconnect () =
         try_with (fun () ->
-            with_connection host port (main_loop handle_data_entry state))
+            with_connection host port (main_loop handle_data_entry on_connect state))
         >>= function
             | Ok _ -> failwith "Connection finised with OK"
             | Error e -> (

@@ -13,7 +13,10 @@ let () =
                 ~doc:"Port"
         )
         (fun host port () -> Connection.infinite_reconnect
-            host port handle_data_entry ~state:State.initial)
+            host port
+            ~handle_data_entry
+            ~on_connect
+            ~state:State.initial)
     in
     Command.run command;;
 

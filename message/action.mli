@@ -7,6 +7,7 @@ type action =
     | Cancel of Order_id.t
     | Convert of Convert.t
     | Generic of Generic.t
+    | Hello
     with sexp;;
 
 val string_of_action : action -> string;;
