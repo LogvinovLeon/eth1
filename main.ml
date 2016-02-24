@@ -9,7 +9,7 @@ let () =
             empty
             +> flag "-host" (optional_with_default "localhost" string)
                 ~doc:"Hostname"
-            +> flag "-port" (optional_with_default 80 int)
+            +> flag "-port" (optional_with_default 25000 int)
                 ~doc:"Port"
         )
         (fun host port () -> Connection.infinite_reconnect

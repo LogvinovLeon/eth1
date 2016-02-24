@@ -28,7 +28,7 @@ if __name__ == "__main__":
                                                  'and writing multiline data.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--host', default="localhost", type=str)
-    parser.add_argument('--port', default=80, type=int)
+    parser.add_argument('--port', default=25000, type=int)
     args = parser.parse_args()
     server = MyTCPServer((args.host, args.port), MyTCPHandler)
     server.serve_forever()
