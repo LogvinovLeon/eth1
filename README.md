@@ -57,4 +57,7 @@
 ### Utils:
 `Color` : Helper functions & types for colored console output
 
+### Mock Server:
+`mock_server.py` : Mock TCP server which sends commands & receives commands
+
 
