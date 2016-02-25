@@ -35,3 +35,26 @@
 * Adapt message & action types to real data specification
 * Implement two moving average crossover strategy
 * Implement pair trading strategy
+
+## System architecture
+
+### Network: 
+`Connection` : Server connection & reconnection logic. Reading & writing raw data.
+
+### Message:
+`Message` : Parsing data from server
+
+`Action` : Generating raw data for server
+
+### State:
+`State` : Functions operating on state (our assets, orders, books history)
+
+### Logic:
+`Controller` : Strategy independent logic & strategy signature
+
+`Two_moving_average_crossover` : Two moving average crossover strategy
+
+### Utils:
+`Color` : Helper functions & types for colored console output
+
+
