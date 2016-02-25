@@ -1,4 +1,4 @@
-INCLUDE = network,logic,message,utils
+INCLUDE = network,logic,message,utils,state
 PKG = async,yojson
 
 all:
