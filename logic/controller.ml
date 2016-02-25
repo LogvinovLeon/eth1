@@ -29,6 +29,7 @@ module Make_Controller =
         let handle_data_entry ~write ~state ~data =
             let message = Message.message_of_string data in (
             print_endline (Sexp.to_string (Message.sexp_of_message message));
+            let open Types.Fill in
             let state = match message with
                 | Message.Fill {size;symbol;dir; _} ->
                     State.update_assets state symbol dir size
@@ -47,5 +48,8 @@ module Make_Controller =
 
         let on_disconnect ~state =
             (* TODO: dump state *)
-            S.on_disconnect ~state;;
+            (
+                print_endline (Sexp.to_string (State.sexp_of_t state));
+                S.on_disconnect ~state
+            );;
     end;;

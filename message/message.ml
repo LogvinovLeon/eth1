@@ -47,10 +47,10 @@ let dir_member key json =
 
 let fill_of_json json =
     {Types.Fill.
-    order_id = json |> int_member "order_id";
+    order_id = json |> string_member "order_id" |> int_of_string;
     size = json |> string_member "size" |> int_of_string;
     symbol = json |> symbol_member "symbol";
-    dir = json |> dir_member "sir";
+    dir = json |> dir_member "dir";
     };;
 
 let message_of_string data =

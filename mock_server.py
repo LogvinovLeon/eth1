@@ -13,13 +13,22 @@ class MyTCPServer(SocketServer.TCPServer):
 
 
 class MyTCPHandler(SocketServer.StreamRequestHandler):
+    timeout = 0.001
+
     def handle(self):
         while True:
-            data1 = {"type" : "hello"}
-            data2 = {"type" : "error", "error": "dupa"}
-            data = json.dumps(data1) + "\n" + json.dumps(data2) + "\n"
+            data = [
+                {"type": "hello"},
+                {"type": "error", "error": "dupa"},
+                {"type": "fill", "symbol": "GS", "dir": "BUY", "size": "1", "order_id": "1"}
+            ]
+            data = "".join([json.dumps(d) + "\n" for d in data])
+            print data
             self.wfile.write(data)
-            print "{} wrote: {}".format(self.client_address[0], self.rfile.readline())
+            try:
+                print "{} wrote: {}".format(self.client_address[0], self.rfile.readline())
+            except:
+                pass
             sleep(1)
 
 
