@@ -1,11 +1,24 @@
 open Sexplib.Std;;
 
-type size_t = string;;
-type order_id_t = int;;
-type dir_t = string;;
-type price_t = float;;
-type symbol_t = string;;
-type _type_t = string;;
+type symbol_t =
+    | BOND
+    | VALBZ
+    | VALE
+    | GS
+    | MS
+    | WFC
+    | XLF
+    with sexp;;
+
+type dir_t =
+    | Buy
+    | Sell
+    with sexp;;
+
+type size_t = int with sexp;;
+type order_id_t = int with sexp;;
+type price_t = float with sexp;;
+type _type_t = string with sexp;;
 
 module Order_id = struct
     type t = {order_id : order_id_t} with sexp

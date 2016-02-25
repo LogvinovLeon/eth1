@@ -10,7 +10,7 @@ type message =
     | Close
     | Book (* TODO *)
     | Ack of Order_id.t
-    | Fill (* TODO *)
+    | Fill of Types.Fill.t
     | Out of Order_id.t
     with sexp;;
 
