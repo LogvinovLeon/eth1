@@ -1,6 +1,5 @@
 open Yojson.Basic;;
 open Util;;
-open Sexplib;;
 open Sexplib.Std;;
 open Types;;
 

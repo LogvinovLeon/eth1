@@ -1,6 +1,5 @@
 open Core.Std;;
 open Async.Std;;
-open State;;
 
 type writer = string -> unit Async_unix.Import.Deferred.t;;
 

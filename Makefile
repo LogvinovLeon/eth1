@@ -1,9 +1,11 @@
+INCLUDE = network,logic,message,utils
+PKG = async,yojson
+
 all:
-	corebuild -pkg async,yojson main.native -I network -I logic -I message -I utils
+	corebuild -pkg $(PKG) main.native -Is $(INCLUDE)
 
 install:
 	echo "TODO: scp to amazon server"
 
 clean:
-	rm -rf _build
-	rm main.native
+	corebuild -clean

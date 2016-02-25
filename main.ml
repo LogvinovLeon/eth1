@@ -1,6 +1,6 @@
-open Core.Std;;
 open Async.Std;;
-open Controller;;
+
+module C = Controller.Make_Controller (Moving_average);;
 
 let () =
     let command = Command.async_basic
@@ -12,11 +12,12 @@ let () =
             +> flag "-port" (optional_with_default 25000 int)
                 ~doc:"Port"
         )
-        (fun host port () -> Connection.infinite_reconnect
+        (fun host port () ->
+            Connection.infinite_reconnect
             host port
-            ~handle_data_entry
-            ~on_connect
-            ~on_disconnect
+            ~handle_data_entry:C.handle_data_entry
+            ~on_connect:C.on_connect
+            ~on_disconnect:C.on_disconnect
             ~state:State.initial)
     in
     Command.run command;;

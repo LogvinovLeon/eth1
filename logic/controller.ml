@@ -1,32 +1,46 @@
-open Core.Std;;
-open Async.Std;;
-open Types;;
+module type Strategy = sig
 
-let handle_data_entry ~write ~state ~data =
-    let message = Message.message_of_string data in (
-    printf "%s\n" (Sexp.to_string (Message.sexp_of_message message));
-    write (Action.string_of_action (Action.Hello))
-    >>= fun () ->
-        write (
-            Action.string_of_action (
-(* https://realworldocaml.org/v1/en/html/records.html#reusing-field-names *)
-                Action.Buy {Buy_or_sell.
-                    order_id = 1;
-                    symbol = "BOND";
-                    price = 4.2;
-                    size = 42
-                }
-            )
-        )
-    >>| fun () -> state
-    );;
+    val handle_message :
+        write : (
+            Action.action -> unit Async.Std.Deferred.t
+        ) ->
+        state : State.t ->
+        message : Message.message ->
+        State.t Async.Std.Deferred.t
 
-let on_connect ~write ~state =
-    (* TODO: load state *)
-    write (Action.string_of_action(Action.Hello))
-    >>| fun () -> state;;
+    val on_connect :
+        write : (
+            Action.action -> unit Async.Std.Deferred.t
+        ) ->
+        state : State.t ->
+        State.t Async.Std.Deferred.t
 
-let on_disconnect ~state = (
-    print_endline (Sexp.to_string (State.sexp_of_t state));
-    return ()
-);;
+    val on_disconnect :
+        state : State.t ->
+        unit Async.Std.Deferred.t
+
+end;;
+
+module Make_Controller =
+    functor (S : Strategy) -> struct
+        open Core.Std;;
+        open Async.Std;;
+
+        let handle_data_entry ~write ~state ~data =
+            let message = Message.message_of_string data in (
+            print_endline (Sexp.to_string (Message.sexp_of_message message));
+            let write = fun action -> write (Action.string_of_action action) in
+            S.handle_message ~write ~state ~message
+            );;
+
+        let on_connect ~write ~state =
+            (* TODO: load state *)
+            write (Action.string_of_action(Action.Hello))
+            >>= fun () ->
+                let write = fun action -> write (Action.string_of_action action) in
+                S.on_connect ~write ~state;;
+
+        let on_disconnect ~state =
+            (* TODO: dump state *)
+            S.on_disconnect ~state;;
+    end;;
