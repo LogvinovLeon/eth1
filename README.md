@@ -27,3 +27,11 @@
 * Install on amazon EC2 instance
 
     `make intall`
+
+## TODO
+
+* Add more data & metrics to State
+* Install on amazon EC2
+* Adapt message & action types to real data specification
+* Implement two moving average crossover strategy
+* Implement pair trading strategy
