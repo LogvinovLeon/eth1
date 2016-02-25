@@ -33,9 +33,9 @@ module Make_Controller =
             S.handle_message ~write ~state ~message
             );;
 
-        let on_connect ~write ~state =
+        let on_connect ~team_name ~write ~state =
             (* TODO: load state *)
-            write (Action.string_of_action(Action.Hello))
+            write (Action.string_of_action(Action.Hello team_name))
             >>= fun () ->
                 let write = fun action -> write (Action.string_of_action action) in
                 S.on_connect ~write ~state;;

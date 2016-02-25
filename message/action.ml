@@ -1,3 +1,5 @@
+open Sexplib;;
+open Sexplib.Std;;
 open Types;;
 open Yojson.Basic;;
 
@@ -7,7 +9,7 @@ type action =
     | Cancel of Order_id.t
     | Convert of Convert.t
     | Generic of Generic.t
-    | Hello
+    | Hello of string
     with sexp;;
 
 let make_generic _type order_id symbol dir price size =
@@ -26,7 +28,8 @@ let string_of_generic_action action =
 
 let string_of_action action =
     match action with
-    | Hello -> to_string (`Assoc [("type", `String "hello")])
+    | Hello name -> to_string
+        (`Assoc [("type", `String "hello"); ("team", `String name)])
     | Cancel v -> to_string
         (`Assoc[("type", `String "cancel"); ("order_id", `Int v.order_id)])
     | _ -> let generic = match action with
