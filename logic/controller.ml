@@ -29,6 +29,11 @@ module Make_Controller =
         let handle_data_entry ~write ~state ~data =
             let message = Message.message_of_string data in (
             print_endline (Sexp.to_string (Message.sexp_of_message message));
+            let state = match message with
+                | Message.Fill {size;symbol;dir; _} ->
+                    State.update_assets state symbol dir size
+                | _ -> state
+            in
             let write = fun action -> write (Action.string_of_action action) in
             S.handle_message ~write ~state ~message
             );;
