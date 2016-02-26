@@ -18,7 +18,7 @@
 
 * Install dependencies
 
-    `opam install core async -j 4`
+    `opam install core async yojson -j 4`
 
 * Make
 
