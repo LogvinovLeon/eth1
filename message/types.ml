@@ -20,6 +20,10 @@ type order_id_t = int with sexp;;
 type price_t = float with sexp;;
 type _type_t = string with sexp;;
 
+(* TODO: Change types *)
+type buy_t = int with sexp;;
+type sell_t = int with sexp;;
+
 module Order_id = struct
     type t = {order_id : order_id_t} with sexp
 end;;
@@ -61,3 +65,10 @@ module Fill = struct
     } with sexp
 end;;
 
+module Book = struct
+    type t = {
+        symbol : symbol_t;
+        buy : buy_t list;
+        sell : sell_t list;
+    } with sexp
+end;;

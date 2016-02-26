@@ -33,6 +33,7 @@ module Make_Controller =
             let state = match message with
                 | Message.Fill {size;symbol;dir; _} ->
                     State.update_assets state symbol dir size
+                | Message.Book book -> State.add_book state book
                 | _ -> state
             in
             let write = fun action -> write (Action.string_of_action action) in

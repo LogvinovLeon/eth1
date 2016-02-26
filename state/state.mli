@@ -4,6 +4,11 @@ type t with sexp;;
 
 val initial : t;;
 
+(* Books *)
+val add_book : t -> Types.Book.t -> t
+
+val get_current_book : t -> Types.symbol_t -> Types.Book.t option
+
 (* Orders *)
 val add_order : t -> Types.Buy_or_sell.t -> t
 

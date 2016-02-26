@@ -9,7 +9,7 @@ type message =
     | Trade
     | Open
     | Close
-    | Book (* TODO *)
+    | Book of Types.Book.t
     | Ack of Types.Order_id.t
     | Fill of Types.Fill.t
     | Out of Types.Order_id.t
@@ -53,18 +53,29 @@ let fill_of_json json =
     dir = json |> dir_member "dir";
     };;
 
+let book_of_json json =
+    (* TODO: Implement parsing when actual types are known *)
+    {Types.Book.
+        symbol = json |> symbol_member "symbol";
+        sell = [];
+        buy = [];
+    }
+
 let message_of_string data =
     let json = from_string data in
     let _type = json |> string_member "type" |> String.lowercase in
     match _type with
     | "hello"  -> Hello
     | "error"  -> Error (json |> string_member "error")
-    | "reject" -> Reject {order_id = json |> int_member "order_id"}
+    | "reject" -> Reject {Types.Order_id.order_id =
+        json |> int_member "order_id"}
     | "trade"  -> Trade
     | "open"   -> Open
     | "close"  -> Close
-    | "book"   -> Book
-    | "ack"    -> Ack {order_id = json |> int_member "order_id"}
-    | "fill"   -> Fill (json |>  fill_of_json)
-    | "out"    -> Out {order_id = json |> int_member "order_id"}
+    | "book"   -> Book (json |> book_of_json)
+    | "ack"    -> Ack {Types.Order_id.
+        order_id = json |> int_member "order_id"}
+    | "fill"   -> Fill (json |> fill_of_json)
+    | "out"    -> Out {Types.Order_id.
+        order_id = json |> int_member "order_id"}
     | _ -> failwith "Exhaustiveness stub";;

@@ -8,7 +8,7 @@ type message =
     | Trade
     | Open
     | Close
-    | Book (* TODO *)
+    | Book of Types.Book.t
     | Ack of Order_id.t
     | Fill of Types.Fill.t
     | Out of Order_id.t
