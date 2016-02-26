@@ -30,9 +30,9 @@ let add_order state order =
 let remove_order state order_id =
     let orders = state.orders in
     let open List.Assoc in
-    let present = mem orders order_id in
-    if present then {state with orders = remove orders order_id}
-    else warn_return "Unexisting order remove attempt" state;;
+    match mem orders order_id with
+    | true -> {state with orders = remove orders order_id}
+    | _ -> warn_return "Unexisting order remove attempt" state;;
 
 let accept_order state order_id =
     let orders = state.orders in
