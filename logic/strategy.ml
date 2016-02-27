@@ -125,11 +125,18 @@ let lower_vale_position ~write ~assets state =
     else
         return state;;
 
+let get_rid_of ~symbol ~write ~size state =
+    match State.get_highest_buy state symbol with
+        | Some price -> sell ~symbol ~size ~write ~state ~price
+        | None -> return state;;
+
 (* Kamil strategy. *)
 let vale_market_making ~write state =
-    let assets = List.Assoc.find_exn state.assets Types.VALE in
-    if abs assets = 10 then
-        lower_vale_position ~write ~assets state
+    let [vale; valbz] = List.map ~f:(List.Assoc.find_exn state.assets) [Types.VALE; Types.VALBZ] in
+    if abs vale = 10 then
+        lower_vale_position ~write ~assets:vale state
+    else if valbz > 0 then
+        get_rid_of ~symbol:Types.VALBZ ~write ~size:valbz state
     else
         take_advantage_of_price_diff ~write state
 
