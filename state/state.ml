@@ -51,6 +51,12 @@ let get_prev_book state symbol =
     | Some books -> List.nth books 1
     | None -> warn_return "Unknown symbol" None;;
 
+let get_highest_buy state symbol =
+    None;;
+
+let get_lowest_sell state symbol =
+    None;;
+
 (* Orders *)
 let add_order state order =
     let open Buy_or_sell in

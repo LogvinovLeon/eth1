@@ -2,7 +2,8 @@ open Async.Std;;
 
 (* Change strategy here *)
 (* Required signature is in logic/controller.ml *)
-module C = Controller.Make_Controller (Two_moving_average_crossover);;
+(* module C = Controller.Make_Controller (Two_moving_average_crossover);; *)
+module C = Controller.Make_Controller (Bond_market_making);;
 
 let () =
     let command = Command.async_basic
@@ -13,7 +14,7 @@ let () =
                 ~doc:"Hostname"
             +> flag "-port" (optional_with_default 25000 int)
                 ~doc:"Port"
-            +> flag "-name" (optional_with_default "TEAM_NAME" string)
+            +> flag "-name" (optional_with_default "TEAM" string)
                 ~doc:"Team name"
         )
         (fun host port team_name () -> Connection.infinite_reconnect
