@@ -13,7 +13,7 @@ let () =
                 ~doc:"Hostname"
             +> flag "-port" (optional_with_default 25000 int)
                 ~doc:"Port"
-            +> flag "-name" (optional_with_default "TEAM_NAME" string)
+            +> flag "-name" (optional_with_default "TEAM" string)
                 ~doc:"Team name"
         )
         (fun host port team_name () -> Connection.infinite_reconnect
