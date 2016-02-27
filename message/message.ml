@@ -81,7 +81,7 @@ let message_of_string data =
     | "error"  -> Error (json |> string_member "error")
     | "reject" -> Reject {Types.Reject.
         order_id = json |> int_member "order_id";
-        reason = json |> string_member "message"}
+        reason = json |> string_member "error"}
     | "trade"  -> Trade
     | "open"   -> Open
     | "close"  -> Close

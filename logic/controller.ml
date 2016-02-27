@@ -29,7 +29,7 @@ module Make_Controller =
         open Async.Std;;
 
         let handle_data_entry ~write ~state ~data =
-            let message = Message.message_of_string data in (
+            let message = info_return ("received " ^ data) (Message.message_of_string data) in (
             print_endline (Sexp.to_string (Message.sexp_of_message message));
             let open Types.Fill in
             let state = match message with
@@ -47,7 +47,8 @@ module Make_Controller =
                 | Message.Error e -> warn_return ("error: " ^ e) state;
                 | _ -> state
             in
-            let write = fun action -> write (Action.string_of_action action) in
+            let write = fun action ->
+                let str = Action.string_of_action action in info_return ("sending " ^ str) (write str) in
             S.handle_message ~write ~state ~message
             );;
 
