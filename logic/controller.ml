@@ -45,11 +45,14 @@ module Make_Controller =
                             (State.remove_order state o.order_id)
                 | Message.Out o -> State.remove_order state o.order_id;
                 | Message.Error e -> warn_return ("error: " ^ e) state;
+                | Message.Open -> State.initial
                 | _ -> state
             in
             let write = fun action ->
                 let str = Action.string_of_action action in info_return ("sending " ^ str) (write str) in
-            S.handle_message ~write ~state ~message
+            match message with
+                | Message.Close -> return State.initial
+                | _ -> S.handle_message ~write ~state ~message
             );;
 
         let on_connect ~team_name ~write ~state =
