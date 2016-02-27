@@ -5,7 +5,7 @@ open Types.Buy_or_sell;;
 
 
 let handle_message ~write ~state ~message =
-    let buy_or_sell dir market_offer our_order =
+    let buy_or_sell dir market_offer our_order state =
         let default_price = if dir = 1 then Int.min_value else Int.max_value in
         let our_price = Option.value_map our_order ~default:default_price ~f:(fun order -> order.price)
         and market_price = Option.value_map market_offer ~default:(default_price + dir) ~f:(fun v -> v)
@@ -28,8 +28,8 @@ let handle_message ~write ~state ~message =
     and market_low_sell = State.get_lowest_sell state Types.BOND
     and our_sell_order = State.get_sell_order state Types.BOND
     in
-    buy_or_sell 1 market_high_buy our_buy_order
-    >>= buy_or_sell -1 market_low_sell our_sell_order;;
+    (buy_or_sell 1 market_high_buy our_buy_order state)
+    >>= (buy_or_sell (-1) market_low_sell our_sell_order);;
 
 let on_connect ~write ~state =
     return state;;
