@@ -1,47 +1,35 @@
 open Core.Std;;
 open Async.Std;;
 open Utils;;
+open Types.Buy_or_sell;;
+
 
 let handle_message ~write ~state ~message =
-    let do_buy state = 
-        let h_buy = State.get_highest_buy state Types.BOND
-        and order = State.get_buy_order state Types.BOND
+    let buy_or_sell dir market_offer our_offer =
+        let default_price = if dir = 1 then Int.min_value else Int.max_value in
+        let our_price = Option.value_map our_offer ~default:default_price ~f:(fun order -> order.price)
+        and market_price = Option.value_map market_offer ~default:(default_price + dir) ~f:(fun v -> v)
         in
-        let our_price = Option.value_map order ~default:Int.min_value ~f:(fun order -> order.price)
-        and market_price = Option.value_map h_buy ~default:(Int.min_value + 1) ~f:(fun v -> v)
-        in
-        if market_price > our_price && market_price + 1 < 1000 then
-            buy
+        if compare market_price our_price = dir && compare (market_price + dir) 1000 = -dir then
+            (if dir = 1 then buy else sell)
                 ~symbol:Types.BOND
-                ~price:(max (market_price + 1) 1)
+                ~price:(market_price + dir) (* Gonna be extreme if there are no market offers *)
                 ~size:1
                 ~write
                 ~state >>= fun state ->
-            Option.value_map order
+            Option.value_map our_offer
                 ~default:(return ())
                 ~f:(fun {order_id; _} -> cancel ~order_id ~write) >>= fun () ->
             return state
         else return state
-    and do_sell state = 
-        let l_sell = State.get_lowest_sell state Types.BOND
-        and order = State.get_sell_order state Types.BOND
-        in
-        let our_price = Option.value_map order ~default:(Int.max_value - 1) ~f:(fun order -> order.price)
-        and market_price = Option.value_map l_sell ~default:Int.max_value ~f:(fun v -> v)
-        in
-        if market_price < our_price && market_price - 1 > 1000 then
-            sell
-                ~symbol:Types.BOND
-                ~price:(max (market_price - 1) 1)
-                ~size:1
-                ~write
-                ~state >>= fun state ->
-            Option.value_map order
-                ~default:(return ())
-                ~f:(fun {order_id; _} -> cancel ~order_id ~write) >>= fun () ->
-            return state
-        else return state
-    in do_buy state >>= do_sell;;
+    in
+    let market_high_buy = State.get_highest_buy state Types.BOND
+    and our_buy_order = State.get_buy_order state Types.BOND
+    and market_low_sell = State.get_lowest_sell state Types.BOND
+    and our_sell_order = State.get_sell_order state Types.BOND
+    in
+    buy_or_sell 1 market_high_buy our_buy_order
+    >>= buy_or_sell -1 market_low_sell our_sell_order;;
 
 let on_connect ~write ~state =
     return state;;
