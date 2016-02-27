@@ -5,13 +5,15 @@ open Warnings;;
 open List.Assoc;;
 
 type t = {(* TODO: add more values *)
-    orders : (order_id_t * (Buy_or_sell.t * bool (* Is accepted *))) list;
+    buy_orders : (order_id_t * (Buy_or_sell.t * bool (* Is accepted *))) list;
+    sell_orders : (order_id_t * (Buy_or_sell.t * bool (* Is accepted *))) list;
     assets : (symbol_t * size_t) list;
     books : (symbol_t * Book.t list) list; (* Newest first *)
 } with sexp;;
 
 let initial = {
-    orders = [];
+    buy_orders = [];
+    sell_orders = [];
     assets = [
         BOND, 0;
         VALBZ, 0;
@@ -52,38 +54,65 @@ let get_prev_book state symbol =
     | None -> warn_return "Unknown symbol" None;;
 
 let get_highest_buy state symbol =
+    (* TODO *)
     None;;
 
 let get_lowest_sell state symbol =
+    (* TODO *)
     None;;
 
 (* Orders *)
-let add_order state order =
+let add_buy_order state order =
     let open Buy_or_sell in
-    {state with orders =
-        add state.orders order.order_id (order, false)};;
+    {state with buy_orders =
+        add state.buy_orders order.order_id (order, false)};;
+
+let add_sell_order state order =
+    let open Buy_or_sell in
+    {state with sell_orders =
+        add state.sell_orders order.order_id (order, false)};;
 
 let remove_order state order_id =
-    let orders = state.orders in
-    match mem orders order_id with
-    | true -> {state with orders = remove orders order_id}
-    | _ -> warn_return "Unexisting order remove attempt" state;;
+    let state =
+        (match mem state.buy_orders order_id with
+        | true -> {state with buy_orders = remove state.buy_orders order_id}
+        | _ -> state)
+    in
+        (match mem state.sell_orders order_id with
+        | true -> {state with sell_orders = remove state.sell_orders order_id}
+        | _ -> state);;
 
 let accept_order state order_id =
-    let orders = state.orders in
-    match find orders order_id with
-    | Some (_, true) -> warn_return "Trying to accept accepted order" state
-    | Some (order, _) -> {state with orders = add orders order_id (order, true)}
-    | None -> warn_return "Trying to accept unexisting order" state;;
+    let state =
+        match find state.buy_orders order_id with
+        | Some (_, true) -> warn_return "Trying to accept accepted order" state
+        | Some (order, _) -> {state with buy_orders = add state.buy_orders order_id (order, true)}
+        | _ -> state
+    in
+        match find state.sell_orders order_id with
+        | Some (_, true) -> warn_return "Trying to accept accepted order" state
+        | Some (order, _) -> {state with sell_orders = add state.sell_orders order_id (order, true)}
+        | _ -> state;;
 
-let fill_order state order_id size =
-    let orders = state.orders in
+let _fill_order orders order_id size =
     let open Buy_or_sell in
     match find orders order_id with
-    | Some (order, true) -> {state with orders =
-        add orders order_id ({order with size = order.size - size}, true)}
-    | Some (_, false) -> warn_return "Trying to fill unaccepted offer" state
-    | None -> warn_return "Trying to fill unexisting order" state;;
+    | Some (order, true) -> add orders order_id ({order with size = order.size - size}, true)
+    | Some (_, false) -> warn_return "Trying to fill unaccepted offer" orders
+    | _ -> orders;;
+
+
+let fill_order state order_id size =
+    let open Buy_or_sell in
+    {state with
+        buy_orders = _fill_order state.buy_orders order_id size;
+        sell_orders = _fill_order state.sell_orders order_id size
+    };;
+
+let get_buy_order state symbol =
+    let open List.Assoc in
+    let open Buy_or_sell in
+    List.nth (List.filter ~f:(fun (order_id,(order, _)) -> order.symbol = symbol) state.buy_orders) 0;;
 
 (* Assets *)
 let update_assets state symbol dir size =
