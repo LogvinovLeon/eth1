@@ -38,7 +38,7 @@ let string_of_generic_action action =
         ("order_id", `Int action.order_id);
         ("symbol", `String (string_of_symbol action.symbol));
         ("dir", `String (string_of_dir action.dir));
-        ("price", `Float action.price);
+        ("price", `Int action.price);
         ("size", `Int action.size);
     ] in to_string json;;
 
@@ -54,7 +54,7 @@ let string_of_action action =
         | Sell v ->
             make_generic "add" v.order_id v.symbol Sell v.price v.size
         | Convert v ->
-            make_generic "convert" 42(* TODO order_id *) v.symbol v.dir 0. v.size
+            make_generic "convert" v.order_id v.symbol v.dir 0 v.size
         | _ -> failwith "Exhaustiveness stub"
         in
         string_of_generic_action generic;;

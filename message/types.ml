@@ -17,12 +17,15 @@ type dir_t =
 
 type size_t = int with sexp;;
 type order_id_t = int with sexp;;
-type price_t = float with sexp;;
+type price_t = int with sexp;;
 type _type_t = string with sexp;;
 
-(* TODO: Change types *)
-type buy_t = int with sexp;;
-type sell_t = int with sexp;;
+module Price_size = struct
+    type t = {
+        price : price_t;
+        size : int;
+    } with sexp
+end;;
 
 module Order_id = struct
     type t = {order_id : order_id_t} with sexp
@@ -39,6 +42,7 @@ end;;
 
 module Convert = struct
     type t = {
+        order_id : order_id_t;
         symbol : symbol_t;
         dir : dir_t;
         size : size_t;
@@ -60,6 +64,7 @@ module Fill = struct
     type t = {
         order_id: order_id_t;
         size : size_t;
+        price : price_t;
         symbol : symbol_t;
         dir : dir_t;
     } with sexp
@@ -68,7 +73,7 @@ end;;
 module Book = struct
     type t = {
         symbol : symbol_t;
-        buy : buy_t list;
-        sell : sell_t list;
+        buy : Price_size.t list;
+        sell : Price_size.t list;
     } with sexp
 end;;

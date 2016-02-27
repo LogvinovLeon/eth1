@@ -21,6 +21,9 @@ let string_member key json =
 let int_member key json =
     member key json |> to_int;;
 
+let list_member key json =
+    member key json |> to_list;;
+
 let symbol_member key json =
     let open Types in
     let to_symbol = function
@@ -47,18 +50,27 @@ let dir_member key json =
 
 let fill_of_json json =
     {Types.Fill.
-    order_id = json |> string_member "order_id" |> int_of_string;
-    size = json |> string_member "size" |> int_of_string;
+    order_id = json |> int_member "order_id";
+    size = json |> int_member "size";
     symbol = json |> symbol_member "symbol";
     dir = json |> dir_member "dir";
+    price = json |> int_member "price";
     };;
 
+let price_size_of_json_array arr =
+    match arr |> to_list with
+      | [price; size] ->
+        {Types.Price_size.
+        price = to_int price;
+        size = to_int size;
+        }
+      | _ -> failwith "illegal price_size";;
+
 let book_of_json json =
-    (* TODO: Implement parsing when actual types are known *)
     {Types.Book.
         symbol = json |> symbol_member "symbol";
-        sell = [];
-        buy = [];
+        sell = json |> list_member "sell" |> List.map price_size_of_json_array;
+        buy = json |> list_member "buy" |> List.map price_size_of_json_array;
     }
 
 let message_of_string data =
