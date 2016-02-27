@@ -87,7 +87,7 @@ let estimate_vale_trade_range state =
     | None -> None
     | Some (low, high) ->
         let len = (high - low) / 3 in
-        Some (low + len, high - len)
+        Some (low, low + len, high - len, high)
 
 let rate_ok state symbol =
     let open Time in
@@ -100,20 +100,20 @@ let take_advantage_of_price_diff ~write state =
         estimate_vale_trade_range state,
         estimate_fair ~state:state ~symbol:Types.VALBZ
     with
-    | true, Some (low, high), Some (fair_price, _) ->
+    | true, Some (mn, low, high, mx), Some (fair_price, _) ->
         if fair_price <= low then
-            sell ~symbol:Types.VALE ~price:high ~size:1 ~write ~state
+            sell ~symbol:Types.VALE ~price:(mx-1) ~size:1 ~write ~state
         else if fair_price >= high then
-            buy ~symbol:Types.VALE ~price:low ~size:1 ~write ~state
+            buy ~symbol:Types.VALE ~price:(mn+1) ~size:1 ~write ~state
         else
             return state
     | _ ->
         return state
 
-let lower_valbz_position ~write ~assets state =
+let lower_vale_position ~write ~assets state =
     match
         rate_ok state Types.VALE,
-        estimate_fair ~state:state ~symbol:Types.VALBZ
+        estimate_fair ~state:state ~symbol:Types.VALE
     with
     | true, Some (fair_price, _) ->
         let dir = compare 0 assets in
@@ -130,7 +130,7 @@ let lower_valbz_position ~write ~assets state =
 let vale_market_making ~write state =
     let assets = List.Assoc.find_exn state.assets Types.VALE in
     if abs assets = 10 then
-        lower_valbz_position ~write ~assets state
+        lower_vale_position ~write ~assets state
     else
         take_advantage_of_price_diff ~write state
 
