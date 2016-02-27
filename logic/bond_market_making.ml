@@ -94,8 +94,7 @@ let rate_ok state symbol =
     let open Time.Span in
     abs_diff (List.Assoc.find_exn state.last_orders symbol) (now ()) >= min_time_diff symbol
 
-(* Kamil strategy. *)
-let vale_market_making ~write state =
+let take_advantage_of_price_diff ~write state =
     match
         rate_ok state Types.VALE,
         estimate_vale_trade_range state,
@@ -110,6 +109,30 @@ let vale_market_making ~write state =
             return state
     | _ ->
         return state
+
+let lower_valbz_position ~write ~assets state =
+    match
+        rate_ok state Types.VALE,
+        estimate_fair ~state:state ~symbol:Types.VALBZ
+    with
+    | true, Some (fair_price, _) ->
+        let dir = compare 0 assets in
+        (if dir = 1 then buy else sell)
+            ~symbol:Types.VALE
+            ~price:fair_price
+            ~size:1
+            ~write
+            ~state
+    | _ ->
+        return state
+
+(* Kamil strategy. *)
+let vale_market_making ~write state =
+    let assets = List.Assoc.find_exn state.assets Types.VALE in
+    if abs assets = 10 then
+        lower_valbz_position ~write ~assets state
+    else
+        take_advantage_of_price_diff ~write state
 
 let handle_message ~write ~state ~message =
     process_symbol ~symbol:Types.BOND ~write state >>=
