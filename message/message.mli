@@ -4,7 +4,7 @@ open Types;;
 type message =
     | Hello
     | Error of string
-    | Reject of Order_id.t
+    | Reject of Reject.t
     | Trade
     | Open
     | Close

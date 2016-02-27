@@ -40,7 +40,9 @@ module Make_Controller =
                         f.size
                 | Message.Book book -> State.add_book state book
                 | Message.Ack o -> State.accept_order state o.order_id
-                | Message.Reject o -> warn_return "order rejected" (State.remove_order state o.order_id)
+                | Message.Reject o ->
+                        warn_return ("order rejected: " ^ o.reason)
+                            (State.remove_order state o.order_id)
                 | Message.Out o -> State.remove_order state o.order_id;
                 | _ -> state
             in

@@ -5,7 +5,7 @@ open Sexplib.Std;;
 type message =
     | Hello
     | Error of string
-    | Reject of Types.Order_id.t
+    | Reject of Types.Reject.t
     | Trade
     | Open
     | Close
@@ -79,8 +79,9 @@ let message_of_string data =
     match _type with
     | "hello"  -> Hello
     | "error"  -> Error (json |> string_member "error")
-    | "reject" -> Reject {Types.Order_id.order_id =
-        json |> int_member "order_id"}
+    | "reject" -> Reject {Types.Reject.
+        order_id = json |> int_member "order_id";
+        reason = json |> string_member "message"}
     | "trade"  -> Trade
     | "open"   -> Open
     | "close"  -> Close

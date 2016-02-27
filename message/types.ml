@@ -49,6 +49,13 @@ module Convert = struct
     } with sexp
 end;;
 
+module Reject = struct
+    type t = {
+        order_id : order_id_t;
+        reason : string;
+    } with sexp
+end;;
+
 module Generic = struct
     type t = {
         _type : _type_t;
