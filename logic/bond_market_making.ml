@@ -22,7 +22,7 @@ let handle_message ~write ~state ~message =
             {Types.Buy_or_sell.
             order_id = id;
             symbol = Types.BOND;
-            price = max (market_buy_price + 1) 0;
+            price = max (market_buy_price + 1) 1;
             size = 1
             })
         >>= fun () ->
