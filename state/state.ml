@@ -59,12 +59,16 @@ let get_prev_book state symbol =
     | None -> warn_return "Unknown symbol" None;;
 
 let get_highest_buy state symbol =
-    (* TODO *)
-    None;;
+    let open List.Assoc in
+    match get_current_book state symbol with
+    | Some book -> List.nth (List.map ~f:(fun x -> x.price) book.buy) 0
+    | None -> None;;
 
 let get_lowest_sell state symbol =
-    (* TODO *)
-    None;;
+    let open List.Assoc in
+    match get_current_book state symbol with
+    | Some book -> List.nth (List.map ~f:(fun x -> x.price) book.sell) 0
+    | None -> None;;
 
 (* Orders *)
 let add_buy_order state order =
