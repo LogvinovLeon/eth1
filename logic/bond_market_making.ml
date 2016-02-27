@@ -18,7 +18,7 @@ let market_making ~symbol ~fair ~write ~state =
         let our_price = Option.value_map our_order ~default:default_price ~f:(fun order -> order.price)
         and market_price = Option.value_map market_offer ~default:(default_price + dir) ~f:(fun v -> v)
         in
-        if compare market_price our_price = dir 
+        if compare market_price our_price = dir
            && compare (market_price + dir) fair = -dir
            && abs (List.Assoc.find_exn state.assets symbol + 2 * dir) <= position_limit symbol
            && (let open Time in let open Time.Span in
@@ -66,7 +66,7 @@ let process_symbol ~symbol ~write state =
         | Some (fair, squared) ->
             begin
                 let open Message in
-                let stdev = squared - fair * fair |> float_of_int |> sqrt in
+                let stdev = squared - fair * fair |> Float.of_int |> sqrt in
                 print_endline (Printf.sprintf "symbol %s: mean %d, stdev = %f" (Action.string_of_symbol symbol) fair stdev);
                 market_making ~symbol ~fair ~write ~state;
             end
