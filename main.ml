@@ -2,7 +2,8 @@ open Async.Std;;
 
 (* Change strategy here *)
 (* Required signature is in logic/controller.ml *)
-module C = Controller.Make_Controller (Two_moving_average_crossover);;
+(* module C = Controller.Make_Controller (Two_moving_average_crossover);; *)
+module C = Controller.Make_Controller (Bond_market_making);;
 
 let () =
     let command = Command.async_basic
