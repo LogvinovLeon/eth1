@@ -9,9 +9,11 @@ type t = {(* TODO: add more values *)
     sell_orders : (order_id_t * (Buy_or_sell.t * bool (* Is accepted *))) list;
     assets : (symbol_t * size_t) list;
     books : (symbol_t * Book.t list) list; (* Newest first *)
+    id : int;
 } with sexp;;
 
 let initial = {
+    id = 0;
     buy_orders = [];
     sell_orders = [];
     assets = [
@@ -33,6 +35,9 @@ let initial = {
         XLF, [];
     ]
 }
+
+let get_id state =
+    {state with id = state.id + 1}, (state.id + 1);;
 
 (* Books *)
 let add_book state book =
@@ -112,7 +117,16 @@ let fill_order state order_id size =
 let get_buy_order state symbol =
     let open List.Assoc in
     let open Buy_or_sell in
-    List.nth (List.filter ~f:(fun (order_id,(order, _)) -> order.symbol = symbol) state.buy_orders) 0;;
+    List.nth (
+        List.map ~f:(fun (order_id, (order, _)) -> order)
+        (List.filter ~f:(fun (order_id,(order, _)) -> order.symbol = symbol) state.buy_orders)) 0;;
+
+let get_sell_order state symbol =
+    let open List.Assoc in
+    let open Buy_or_sell in
+    List.nth (
+        List.map ~f:(fun (order_id, (order, _)) -> order)
+        (List.filter ~f:(fun (order_id,(order, _)) -> order.symbol = symbol) state.sell_orders)) 0;;
 
 (* Assets *)
 let update_assets state symbol dir size =
