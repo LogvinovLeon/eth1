@@ -5,7 +5,7 @@ all:
 	corebuild -pkg $(PKG) main.native -Is $(INCLUDE)
 
 install:
-	echo "TODO: scp to amazon server"
+	scp main.native ubuntu@54.194.72.28:
 
 clean:
 	corebuild -clean
