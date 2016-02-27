@@ -9,7 +9,7 @@ let buy_or_sell dir market_offer our_offer =
         | Some order -> order.price
     in
     let market_price =
-        match marker_offer with
+        match market_offer with
         | None -> default_price + dir
         | Some v -> v
     in
