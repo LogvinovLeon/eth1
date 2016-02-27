@@ -1,3 +1,5 @@
+open Warnings;;
+
 module type Strategy = sig
 
     val handle_message :
@@ -31,9 +33,15 @@ module Make_Controller =
             print_endline (Sexp.to_string (Message.sexp_of_message message));
             let open Types.Fill in
             let state = match message with
-                | Message.Fill {size;symbol;dir; _} ->
-                    State.update_assets state symbol dir size
+                | Message.Fill f ->
+                    State.fill_order
+                        (State.update_assets state f.symbol f.dir f.size)
+                        f.order_id
+                        f.size
                 | Message.Book book -> State.add_book state book
+                | Message.Ack o -> State.accept_order state o.order_id
+                | Message.Reject o -> warn_return "order rejected" (State.remove_order state o.order_id)
+                | Message.Out o -> State.remove_order state o.order_id;
                 | _ -> state
             in
             let write = fun action -> write (Action.string_of_action action) in
