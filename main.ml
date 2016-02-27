@@ -23,7 +23,7 @@ let () =
                 ~handle_data_entry:C.handle_data_entry
                 ~on_connect:(C.on_connect ~team_name)
                 ~on_disconnect:C.on_disconnect
-                ~state:State.initial
+                ~state:(State.initial ())
         )
     in
     Command.run command;;

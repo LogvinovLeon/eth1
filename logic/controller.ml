@@ -45,7 +45,7 @@ module Make_Controller =
                             (State.remove_order state o.order_id)
                 | Message.Out o -> State.remove_order state o.order_id;
                 | Message.Error e -> warn_return ("error: " ^ e) state;
-                | Message.Open -> State.initial
+                | Message.Open -> State.initial ()
                 | Message.Close -> { state with closed = true }
                 | _ -> state
             in

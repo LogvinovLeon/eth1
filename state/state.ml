@@ -9,10 +9,11 @@ type t = {(* TODO: add more values *)
     sell_orders : (order_id_t * (Buy_or_sell.t * bool (* Is accepted *))) list;
     assets : (symbol_t * size_t) list;
     books : (symbol_t * Book.t list) list; (* Newest first *)
+    last_orders : (symbol_t * Time.t) list;
     closed : bool;
 } with sexp;;
 
-let initial = {
+let initial () = let now = Time.now () in {
     buy_orders = [];
     sell_orders = [];
     assets = [
@@ -32,6 +33,15 @@ let initial = {
         MS, [];
         WFC, [];
         XLF, [];
+    ];
+    last_orders = [
+        BOND, now;
+        VALBZ, now;
+        VALE, now;
+        GS, now;
+        MS, now;
+        WFC, now;
+        XLF, now;
     ];
     closed = false;
 }

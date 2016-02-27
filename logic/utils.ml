@@ -10,7 +10,9 @@ let buy ~symbol ~price ~size ~write ~state =
          size = size
         } in
     write (Action.Buy order) >>= fun () ->
-    return { state with buy_orders = (order.order_id, (order, false))::state.buy_orders };;
+    let open List.Assoc in
+    return { state with buy_orders = (order.order_id, (order, false))::state.buy_orders;
+                        last_orders = add (remove state.last_orders symbol) symbol (Time.now ())};;
 
 let sell ~symbol ~price ~size ~write ~state =
     let order = {Types.Buy_or_sell.
@@ -20,6 +22,8 @@ let sell ~symbol ~price ~size ~write ~state =
          size = size
         } in
     write (Action.Sell order) >>= fun () ->
-    return { state with sell_orders = (order.order_id, (order, false))::state.sell_orders };;
+    let open List.Assoc in
+    return { state with sell_orders = (order.order_id, (order, false))::state.sell_orders;
+                        last_orders = add (remove state.last_orders symbol) symbol (Time.now ())};;
 
 let cancel ~order_id ~write = write (Action.Cancel { order_id });;
