@@ -5,9 +5,9 @@ open Types.Buy_or_sell;;
 
 
 let handle_message ~write ~state ~message =
-    let buy_or_sell dir market_offer our_offer =
+    let buy_or_sell dir market_offer our_order =
         let default_price = if dir = 1 then Int.min_value else Int.max_value in
-        let our_price = Option.value_map our_offer ~default:default_price ~f:(fun order -> order.price)
+        let our_price = Option.value_map our_order ~default:default_price ~f:(fun order -> order.price)
         and market_price = Option.value_map market_offer ~default:(default_price + dir) ~f:(fun v -> v)
         in
         if compare market_price our_price = dir && compare (market_price + dir) 1000 = -dir then
@@ -17,7 +17,7 @@ let handle_message ~write ~state ~message =
                 ~size:1
                 ~write
                 ~state >>= fun state ->
-            Option.value_map our_offer
+            Option.value_map our_order
                 ~default:(return ())
                 ~f:(fun {order_id; _} -> cancel ~order_id ~write) >>= fun () ->
             return state
