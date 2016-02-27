@@ -111,20 +111,19 @@ let take_advantage_of_price_diff ~write state =
         return state
 
 let lower_vale_position ~write ~assets state =
-    match
-        rate_ok state Types.VALE,
-        estimate_fair ~state:state ~symbol:Types.VALE
-    with
-    | true, Some (fair_price, _) ->
-        let dir = compare 0 assets in
-        (if dir = 1 then buy else sell)
+    if rate_ok state Types.VALE then
+        let dir = match compare 0 assets with
+            | 1 -> Types.Buy
+            | _ -> Types.Sell
+        in
+        convert
             ~symbol:Types.VALE
-            ~price:fair_price
-            ~size:1
+            ~dir
+            ~size:10
             ~write
             ~state
-    | _ ->
-        return state
+    else
+        return state;;
 
 (* Kamil strategy. *)
 let vale_market_making ~write state =
