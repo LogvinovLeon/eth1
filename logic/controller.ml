@@ -44,6 +44,7 @@ module Make_Controller =
                         warn_return ("order rejected: " ^ o.reason)
                             (State.remove_order state o.order_id)
                 | Message.Out o -> State.remove_order state o.order_id;
+                | Message.Error e -> warn_return ("error: " ^ e) state;
                 | _ -> state
             in
             let write = fun action -> write (Action.string_of_action action) in
