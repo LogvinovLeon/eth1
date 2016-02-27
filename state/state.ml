@@ -10,6 +10,7 @@ type t = {(* TODO: add more values *)
     assets : (symbol_t * size_t) list;
     books : (symbol_t * Book.t list) list; (* Newest first *)
     last_orders : (symbol_t * Time.t) list;
+    trades : (symbol_t * Trade.t list) list;
     closed : bool;
 } with sexp;;
 
@@ -42,6 +43,15 @@ let initial () = let now = Time.now () in {
         MS, now;
         WFC, now;
         XLF, now;
+    ];
+    trades = [
+        BOND, [];
+        VALBZ, [];
+        VALE, [];
+        GS, [];
+        MS, [];
+        WFC, [];
+        XLF, [];
     ];
     closed = false;
 }

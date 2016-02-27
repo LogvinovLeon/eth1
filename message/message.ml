@@ -6,7 +6,7 @@ type message =
     | Hello
     | Error of string
     | Reject of Types.Reject.t
-    | Trade
+    | Trade of Types.Trade.t
     | Open
     | Close
     | Book of Types.Book.t
@@ -82,7 +82,10 @@ let message_of_string data =
     | "reject" -> Reject {Types.Reject.
         order_id = json |> int_member "order_id";
         reason = json |> string_member "error"}
-    | "trade"  -> Trade
+    | "trade"  -> Trade {Types.Trade.
+        price = json |> int_member "price";
+        size = json |> int_member "size";
+        symbol = json |> symbol_member "symbol"}
     | "open"   -> Open
     | "close"  -> Close
     | "book"   -> Book (json |> book_of_json)

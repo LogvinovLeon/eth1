@@ -84,3 +84,11 @@ module Book = struct
         sell : Price_size.t list;
     } with sexp
 end;;
+
+module Trade = struct
+    type t = {
+        symbol : symbol_t;
+        price : price_t;
+        size : size_t;
+    } with sexp
+end;;

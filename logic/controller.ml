@@ -47,6 +47,13 @@ module Make_Controller =
                 | Message.Error e -> warn_return ("error: " ^ e) state;
                 | Message.Open -> State.initial ()
                 | Message.Close -> { state with closed = true }
+                | Message.Trade trade -> let open List.Assoc in
+                        { state with trades =
+                            add
+                                state.trades
+                                trade.symbol
+                                (List.take (trade::find_exn state.trades trade.symbol) 65536)
+                        }
                 | _ -> state
             in
             let write = fun action ->

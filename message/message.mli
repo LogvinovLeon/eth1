@@ -5,7 +5,7 @@ type message =
     | Hello
     | Error of string
     | Reject of Reject.t
-    | Trade
+    | Trade of Trade.t
     | Open
     | Close
     | Book of Types.Book.t
