@@ -7,6 +7,7 @@ open List.Assoc;;
 type t = {(* TODO: add more values *)
     buy_orders : (order_id_t * (Buy_or_sell.t * bool (* Is accepted *))) list;
     sell_orders : (order_id_t * (Buy_or_sell.t * bool (* Is accepted *))) list;
+    convert_orders : (order_id_t * Convert.t) list;
     assets : (symbol_t * size_t) list;
     books : (symbol_t * Book.t list) list; (* Newest first *)
     last_orders : (symbol_t * Time.t) list;
@@ -17,6 +18,7 @@ type t = {(* TODO: add more values *)
 let initial () = let now = Time.now () in {
     buy_orders = [];
     sell_orders = [];
+    convert_orders = [];
     assets = [
         BOND, 0;
         VALBZ, 0;
@@ -87,6 +89,13 @@ let get_lowest_sell state symbol =
     | Some book -> List.nth (List.map ~f:(fun x -> x.price) book.sell) 0
     | None -> None;;
 
+(* Assets *)
+let update_assets state symbol dir size =
+    let size = size * match dir with | Buy -> 1 | Sell -> -1 in
+    let assets = state.assets in
+    let value = find_exn assets symbol in
+    {state with assets = add (remove state.assets symbol) symbol (value + size)};;
+
 (* Orders *)
 let add_buy_order state order =
     let open Buy_or_sell in
@@ -98,14 +107,23 @@ let add_sell_order state order =
     {state with sell_orders =
         add state.sell_orders order.order_id (order, false)};;
 
+let add_convert_order state order =
+    let open Convert in
+    {state with convert_orders =
+        add state.convert_orders order.order_id order};;
+
 let remove_order state order_id =
     let state =
         (match mem state.buy_orders order_id with
         | true -> {state with buy_orders = remove state.buy_orders order_id}
         | _ -> state)
-    in
+    in let state =
         (match mem state.sell_orders order_id with
         | true -> {state with sell_orders = remove state.sell_orders order_id}
+        | _ -> state)
+    in
+       (match mem state.convert_orders order_id with
+        | true -> {state with convert_orders = remove state.convert_orders order_id}
         | _ -> state);;
 
 let accept_order state order_id =
@@ -114,10 +132,24 @@ let accept_order state order_id =
         | Some (_, true) -> warn_return "Trying to accept accepted order" state
         | Some (order, _) -> {state with buy_orders = add state.buy_orders order_id (order, true)}
         | _ -> state
-    in
+    in let state =
         match find state.sell_orders order_id with
         | Some (_, true) -> warn_return "Trying to accept accepted order" state
         | Some (order, _) -> {state with sell_orders = add state.sell_orders order_id (order, true)}
+        | _ -> state
+    in let open Convert in
+      match find state.convert_orders order_id with
+        | Some {order_id = _; symbol = Types.VALE; dir = dir; size = size} ->
+                let state = update_assets state Types.VALE dir size in
+                let state = update_assets state Types.VALBZ (negate dir) size in
+                remove_order state order_id
+        | Some {order_id = _; symbol = Types.XLF; dir = dir; size = size} ->
+                let state = update_assets state Types.XLF dir size in
+                let state = update_assets state Types.BOND (negate dir) (3 * size) in
+                let state = update_assets state Types.GS (negate dir) (2 * size) in
+                let state = update_assets state Types.MS (negate dir) (3 * size) in
+                let state = update_assets state Types.WFC (negate dir) (2 * size) in
+                remove_order state order_id
         | _ -> state;;
 
 let _fill_order orders order_id size =
@@ -149,9 +181,4 @@ let get_sell_order state symbol =
         List.map ~f:(fun (order_id, (order, _)) -> order)
         (List.filter ~f:(fun (order_id,(order, _)) -> order.symbol = symbol) state.sell_orders)) 0;;
 
-(* Assets *)
-let update_assets state symbol dir size =
-    let size = size * match dir with | Buy -> 1 | Sell -> -1 in
-    let assets = state.assets in
-    let value = find_exn assets symbol in
-    {state with assets = add (remove state.assets symbol) symbol (value + size)};;
+

@@ -15,6 +15,10 @@ type dir_t =
     | Sell
     with sexp;;
 
+let negate = function
+    | Buy -> Sell
+    | Sell -> Buy;;
+
 type size_t = int with sexp;;
 type order_id_t = int with sexp;;
 type price_t = int with sexp;;
