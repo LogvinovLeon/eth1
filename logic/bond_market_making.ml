@@ -25,7 +25,6 @@ let market_making ~symbol ~fair ~write ~state =
                  abs_diff (List.Assoc.find_exn state.last_orders symbol) (now ()) >= min_time_diff symbol)
            && Option.is_some market_offer
         then
-            Warnings.info_return ("asset: " ^ string_of_int (List.Assoc.find_exn state.assets symbol))
             (if dir = 1 then buy else sell)
                 ~symbol
                 ~price:(market_price + dir) (* Gonna be extreme if there are no market offers *)
@@ -46,27 +45,41 @@ let market_making ~symbol ~fair ~write ~state =
     (buy_or_sell 1 market_high_buy our_buy_order state)
     >>= (buy_or_sell (-1) market_low_sell our_sell_order);;
 
+let average ?trans:(trans=fun x -> x) lst = (let open Types.Trade in
+    let (s, n) = List.fold_right lst ~init:(0, 0) ~f:(fun trade (sum, count) ->
+        (sum + trans trade.price * trade.size, count + trade.size))
+    in s / n);;
+
 let rec estimate_fair ~state ~symbol = match symbol with
-    | Types.BOND -> Some 1000
-    | Types.VALE -> estimate_fair ~symbol:Types.VALBZ ~state
-    | symbol ->
-        match (State.get_highest_buy state symbol, State.get_lowest_sell state symbol) with
-            | (Some hi, Some lo) -> Some ((hi + lo) / 2)
-            | _ -> None;;
+    | Types.BOND -> Some (1000, 1000000)
+    | symbol -> let open List in let open List.Assoc in
+        let trades = sort ~cmp:Pervasives.compare (take (find_exn state.trades symbol) 8000) in
+        let trades_len = length trades in
+        let trades = take (drop trades (trades_len / 4)) (3 * trades_len / 4) in
+        match trades with
+            | [] -> None;
+            | _ -> Some (average trades,
+                        average ~trans:(fun x -> x * x) trades);;
 
 let process_symbol ~symbol ~write state =
     match estimate_fair ~symbol ~state with
-        | Some fair -> market_making ~symbol ~fair ~write ~state
+        | Some (fair, squared) ->
+            begin
+                let open Message in
+                let stdev = squared - fair * fair |> float_of_int |> sqrt in
+                print_endline (Printf.sprintf "symbol %s: mean %d, stdev = %f" (Action.string_of_symbol symbol) fair stdev);
+                market_making ~symbol ~fair ~write ~state;
+            end
         | None -> return state;;
 
 let handle_message ~write ~state ~message =
-    process_symbol ~symbol:Types.BOND ~write state (*>>=
-    process_symbol ~symbol:Types.VALBZ ~write >>=
-    process_symbol ~symbol:Types.VALE ~write >>=
+    process_symbol ~symbol:Types.BOND ~write state >>=
+(*    process_symbol ~symbol:Types.VALBZ ~write >>=
+    process_symbol ~symbol:Types.VALE ~write >>= *)
     process_symbol ~symbol:Types.GS ~write >>=
     process_symbol ~symbol:Types.MS ~write >>=
     process_symbol ~symbol:Types.WFC ~write;;
-process_symbol ~symbol:Types.XLF ~write;; *)
+(* process_symbol ~symbol:Types.XLF ~write;; *)
 
 let on_connect ~write ~state =
     return state;;
