@@ -45,7 +45,7 @@ let add_book state book =
     let open Book in
     match find state.books book.symbol with
     | Some type_books -> {state with books =
-        add state.books book.symbol (book::type_books)}
+        add state.books book.symbol (List.take (book::type_books) 256)}
     | None -> warn_return "Trying to add a book of unknown symbol" state;;
 
 let get_current_book state symbol =
