@@ -23,6 +23,21 @@ module type Strategy = sig
 
 end;;
 
+let dump_trades trades =
+    (
+        let open Yojson.Basic in
+        let json = `Assoc
+            (List.map (
+                fun (symbol, trades) -> ((Action.string_of_symbol symbol),
+                    `List (List.map (fun trade ->
+                        `Assoc [
+                            "symbol", (`String (Action.string_of_symbol symbol));
+                            "price", let open Types.Trade in `Int trade.price
+                        ]) trades)
+                )) trades) in
+        to_file "trades.json" json
+    );;
+
 module Make_Controller =
     functor (S : Strategy) -> struct
         open Core.Std;;
@@ -52,7 +67,11 @@ module Make_Controller =
                 | Message.Error e -> warn_return ("error: " ^ e) state;
                 | Message.Open -> State.initial ()
                 | Message.Close -> let open State in { state with closed = true }
-                | Message.Trade trade -> let open List.Assoc in let open State in let open Types.Trade in
+                | Message.Trade trade ->
+                        let open List.Assoc in
+                        let open State in
+                        let open Types.Trade in
+                        let _ = dump_trades state.trades in
                         { state with trades =
                             add
                                 state.trades
