@@ -3,6 +3,7 @@ open Async.Std;;
 open Utils;;
 open State;;
 open Types.Buy_or_sell;;
+open Types.Book;;
 
 let position_limit = function
     | Types.VALBZ | Types.VALE -> 10
@@ -72,13 +73,52 @@ let process_symbol ~symbol ~write state =
             end
         | None -> return state;;
 
+(* Returns a pair option - maximum buy price and minimum sell price. *)
+let price_range state symbol =
+    match get_current_book state symbol with
+    | None -> None
+    | Some book ->
+        let buy_max = List.fold_left book.buy ~init:Int.min_value ~f:(fun x p -> max x p.price)
+        and sell_min = List.fold_left book.sell ~init:Int.max_value ~f:(fun x p -> min x p.price) in
+        Some (buy_max, sell_min)
+
+let estimate_vale_trade_range state =
+    match price_range state Types.VALE with
+    | None -> None
+    | Some (low, high) ->
+        let len = (high - low) / 3 in
+        Some (low + len, high - len)
+
+let rate_ok state symbol =
+    let open Time in
+    let open Time.Span in
+    abs_diff (List.Assoc.find_exn state.last_orders symbol) (now ()) >= min_time_diff symbol
+
+(* Kamil strategy. *)
+let vale_market_making ~write state =
+    match
+        rate_ok state Types.VALE,
+        estimate_vale_trade_range state,
+        estimate_fair ~state:state ~symbol:Types.VALBZ
+    with
+    | true, Some (low, high), Some (fair_price, _) ->
+        if fair_price <= low then
+            sell ~symbol:Types.VALE ~price:high ~size:1 ~write ~state
+        else if fair_price >= high then
+            buy ~symbol:Types.VALE ~price:low ~size:1 ~write ~state
+        else
+            return state
+    | _ ->
+        return state
+
 let handle_message ~write ~state ~message =
     process_symbol ~symbol:Types.BOND ~write state >>=
-(*    process_symbol ~symbol:Types.VALBZ ~write >>=
-    process_symbol ~symbol:Types.VALE ~write >>= *)
+(*  process_symbol ~symbol:Types.VALBZ ~write >>=
+    process_symbol ~symbol:Types.VALE ~write >>=
     process_symbol ~symbol:Types.GS ~write >>=
     process_symbol ~symbol:Types.MS ~write >>=
-    process_symbol ~symbol:Types.WFC ~write;;
+    process_symbol ~symbol:Types.WFC ~write >>= *)
+    vale_market_making ~write;;
 (* process_symbol ~symbol:Types.XLF ~write;; *)
 
 let on_connect ~write ~state =
