@@ -9,6 +9,7 @@ type t = {(* TODO: add more values *)
     sell_orders : (order_id_t * (Buy_or_sell.t * bool (* Is accepted *))) list;
     assets : (symbol_t * size_t) list;
     books : (symbol_t * Book.t list) list; (* Newest first *)
+    closed : bool;
 } with sexp;;
 
 let initial = {
@@ -31,7 +32,8 @@ let initial = {
         MS, [];
         WFC, [];
         XLF, [];
-    ]
+    ];
+    closed = false;
 }
 
 (* Books *)
