@@ -9,11 +9,9 @@ type t = {(* TODO: add more values *)
     sell_orders : (order_id_t * (Buy_or_sell.t * bool (* Is accepted *))) list;
     assets : (symbol_t * size_t) list;
     books : (symbol_t * Book.t list) list; (* Newest first *)
-    id : int;
 } with sexp;;
 
 let initial = {
-    id = 0;
     buy_orders = [];
     sell_orders = [];
     assets = [
@@ -35,9 +33,6 @@ let initial = {
         XLF, [];
     ]
 }
-
-let get_id state =
-    {state with id = state.id + 1}, (state.id + 1);;
 
 (* Books *)
 let add_book state book =
